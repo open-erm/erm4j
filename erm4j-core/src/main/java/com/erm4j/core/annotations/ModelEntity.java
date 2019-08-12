@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @author skadnikov
  *
  */
-@Target(value = {ElementType.TYPE})
+@Target(value = {ElementType.TYPE, ElementType.TYPE_USE, ElementType.PARAMETER})
 @Retention (RetentionPolicy.RUNTIME)
 public @interface ModelEntity {
 	

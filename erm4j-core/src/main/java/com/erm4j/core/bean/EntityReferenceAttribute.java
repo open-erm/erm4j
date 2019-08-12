@@ -1,5 +1,7 @@
 package com.erm4j.core.bean;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import com.erm4j.core.constant.ModelDomainType;
 import com.erm4j.core.constant.Multiplicity;
 
@@ -11,16 +13,20 @@ import com.erm4j.core.constant.Multiplicity;
  */
 public class EntityReferenceAttribute extends EntityAttribute {
 
+	@JsonProperty("target_entity_uid")
 	private String targetEntityUid;
 	
+	@JsonProperty("multiplicity")
 	private Multiplicity multiplicity = Multiplicity.ONE_TO_ONE;
 	
+	@JsonProperty("fk")
 	private boolean foreignKey = true;
 	
 	/***
 	 * Returns multiplicity of a relation
 	 * @return
 	 */
+	@JsonProperty("multiplicity")
 	public Multiplicity getMultiplicity() {
 		return multiplicity;
 	}
@@ -29,6 +35,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * Sets multiplicity of a relation
 	 * @param multiplicity
 	 */
+	@JsonProperty("multiplicity")
 	public void setMultiplicity(Multiplicity multiplicity) {
 		this.multiplicity = multiplicity;
 	}
@@ -37,6 +44,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * Returns UID of target entity that is referenced by attribute
 	 * @return
 	 */
+	@JsonProperty("target_entity_uid")
 	public String getTargetEntityUid() {
 		return targetEntityUid;
 	}
@@ -45,6 +53,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * Sets UID of target entity that is referenced by attribute
 	 * @param targetEntityUid
 	 */
+	@JsonProperty("target_entity_uid")
 	public void setTargetEntityUid(String targetEntityUid) {
 		this.targetEntityUid = targetEntityUid;
 	}
@@ -53,6 +62,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * Identifies if an attribute is controlled by foreign key constraint
 	 * @return
 	 */
+	@JsonProperty("fk")
 	public boolean isForeignKey() {
 		return foreignKey;
 	}
@@ -62,6 +72,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * 
 	 * @param foreignKey
 	 */
+	@JsonProperty("fk")
 	public void setForeignKey(boolean foreignKey) {
 		this.foreignKey = foreignKey;
 	}

@@ -36,6 +36,6 @@ public @interface ModelEntityReference {
 	 * Specifies target entity that is referenced by annotated attribute
 	 * @return
 	 */
-	Class<?> target();
+	Class<@ModelEntity ?> target();
 
 }
