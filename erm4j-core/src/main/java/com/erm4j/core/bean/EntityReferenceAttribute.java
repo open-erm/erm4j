@@ -13,8 +13,8 @@ import com.erm4j.core.constant.Multiplicity;
  */
 public class EntityReferenceAttribute extends EntityAttribute {
 
-	@JsonProperty("target_entity_uid")
-	private String targetEntityUid;
+	@JsonProperty("target_entity_ref")
+	private AccessibleElementReference target = null;
 	
 	@JsonProperty("multiplicity")
 	private Multiplicity multiplicity = Multiplicity.ONE_TO_ONE;
@@ -22,6 +22,25 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	@JsonProperty("fk")
 	private boolean foreignKey = true;
 	
+	
+	/***
+	 * Returns a target {@link Entity} reference
+	 * @return
+	 */
+	@JsonProperty("target_entity_ref")
+	public AccessibleElementReference getTarget() {
+		return target;
+	}
+	
+	/***
+	 * Sets a target {@link Entity} reference
+	 * @param target
+	 */
+	@JsonProperty("target_entity_ref")
+	public void setTarget(AccessibleElementReference target) {
+		this.target = target;
+	}
+
 	/***
 	 * Returns multiplicity of a relation
 	 * @return
@@ -40,24 +59,6 @@ public class EntityReferenceAttribute extends EntityAttribute {
 		this.multiplicity = multiplicity;
 	}
 
-	/***
-	 * Returns UID of target entity that is referenced by attribute
-	 * @return
-	 */
-	@JsonProperty("target_entity_uid")
-	public String getTargetEntityUid() {
-		return targetEntityUid;
-	}
-
-	/***
-	 * Sets UID of target entity that is referenced by attribute
-	 * @param targetEntityUid
-	 */
-	@JsonProperty("target_entity_uid")
-	public void setTargetEntityUid(String targetEntityUid) {
-		this.targetEntityUid = targetEntityUid;
-	}
-	
 	/***
 	 * Identifies if an attribute is controlled by foreign key constraint
 	 * @return
