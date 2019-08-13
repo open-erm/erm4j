@@ -27,36 +27,71 @@ public class ERMScanner {
 	private String packageScanMask = "";
 	private List<ClassGraphEntityBuilder> builders = new ArrayList<>();
 	private DBTableNamingConventions tableNamingConventions = new DBTableNamingConventions();
-
+	
+	/***
+	 * Sets if class scanning will be logged to stdout.
+	 * Default is false
+	 * @param logErrorsToStdOut
+	 * @return
+	 */
 	public ERMScanner setLogErrorsToStdOut(boolean logErrorsToStdOut) {
 		this.logErrorsToStdOut = logErrorsToStdOut;
 		return this;
 	}
 
-	public String getPackageScanMask() {
-		return packageScanMask;
-	}
-
+	/***
+	 * Sets package mask for classes which would be scanned.
+	 * Therefore if mask would 'com.abc.core' than only classes that
+	 * are included into 'com.abc.core.*' would be scanned
+	 * @param packageScanMask
+	 * @return
+	 */
 	public ERMScanner setPackageScanMask(String packageScanMask) {
 		this.packageScanMask = packageScanMask;
 		return this;
 	}
 	
+	/***
+	 * Adds {@link ClassGraphEntityBuilder} which will process
+	 * class metadata and extract {@link Entity} objects
+	 * @param builder
+	 * @return
+	 */
 	public ERMScanner addEntityBuilder(ClassGraphEntityBuilder builder) {
 		this.builders.add(builder);
 		return this;
 	}
-	
+	/***
+	 * Sets prefix that would prepend generated table name
+	 * i.e. if prefix is 'SBT_' and generated table name is 'order'
+	 * that table name will be 'SBT_Order'
+
+	 * @param tablePrefix
+	 * @return
+	 */
 	public ERMScanner setTablePrefix(String tablePrefix) {
 		tableNamingConventions.setTableNamePrefix(tablePrefix);
 		return this;
 	}
 	
+	/***
+	 * Sets if snake case naming must be used.
+	 * If true that 'ClientOrderItem' entity name would be converted to 'CLIENT_ORDER_ITEM'
+	 * table name. Default value is true
+	 * @param useSnakeCase
+	 * @return
+	 */
 	public ERMScanner setUseSnakeCase(boolean useSnakeCase) {
 		tableNamingConventions.setUseSnakeCaseNaming(useSnakeCase);
 		return this;
 	}
 	
+	/***
+	 * Performs scanning of classes and returns list of {@link Entity} objects
+	 * that were found by {@link ClassGraphEntityBuilder} objects added 
+	 * to a list of entity builders 
+	 * @return
+	 */
 	public List<Entity> scan() {
 		ClassGraph classGraph = new ClassGraph()
 									.enableAllInfo()             // Scan everything
