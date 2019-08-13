@@ -63,7 +63,7 @@ public class EntityBuilderClassInfoHelper {
 	public static String generateTableColumnName(FieldInfo fieldInfo, DBTableNamingConventions tableNaming) {
 		String attrSystemName = generateEntityAttributeSystemName(fieldInfo);
 		if (tableNaming.isUseSnakeCaseNaming()) {
-			return camelCaseToSnakeCase(attrSystemName);
+			return camelCaseToSnakeCase(attrSystemName).toUpperCase();
 		}
 		else {
 			return attrSystemName;

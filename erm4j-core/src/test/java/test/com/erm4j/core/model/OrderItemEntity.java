@@ -7,7 +7,7 @@ import com.erm4j.core.annotations.ModelEntityAttribute;
 import com.erm4j.core.annotations.ModelEntityReference;
 import com.erm4j.core.constant.ModelDomainType;
 
-@ModelEntity(systemName = "OrderItem", name = "Order item")
+@ModelEntity(systemName = "OrderItem", name = "Order item", uid = "order-item-entity-uid")
 public class OrderItemEntity {
 	
 	@ModelEntityAttribute(domainType = ModelDomainType.ID, primaryKey = true)
@@ -25,4 +25,5 @@ public class OrderItemEntity {
 	@ModelEntityAttribute(domainType = ModelDomainType.ENTITY, systemName = "Order", name = "Order")
 	@ModelEntityReference(target = OrderEntity.class)
 	private long orderId;
+	
 }

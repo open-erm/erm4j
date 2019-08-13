@@ -23,9 +23,15 @@ import io.github.classgraph.ScanResult;
  */
 public class ERMScanner {
 
+	private boolean logErrorsToStdOut = false;
 	private String packageScanMask = "";
 	private List<ClassGraphEntityBuilder> builders = new ArrayList<>();
 	private DBTableNamingConventions tableNamingConventions = new DBTableNamingConventions();
+
+	public ERMScanner setLogErrorsToStdOut(boolean logErrorsToStdOut) {
+		this.logErrorsToStdOut = logErrorsToStdOut;
+		return this;
+	}
 
 	public String getPackageScanMask() {
 		return packageScanMask;
@@ -41,13 +47,25 @@ public class ERMScanner {
 		return this;
 	}
 	
+	public ERMScanner setTablePrefix(String tablePrefix) {
+		tableNamingConventions.setTableNamePrefix(tablePrefix);
+		return this;
+	}
+	
+	public ERMScanner setUseSnakeCase(boolean useSnakeCase) {
+		tableNamingConventions.setUseSnakeCaseNaming(useSnakeCase);
+		return this;
+	}
+	
 	public List<Entity> scan() {
-		try (ScanResult scanResult =
-		        new ClassGraph()
-		            .verbose()                   // Log to stderr
-		            .enableClassInfo()             // Scan only classes
-		            .whitelistPackages(packageScanMask)  // Scan packageScanMask subpackages (omit to scan all packages)
-		            .scan()) {                   // Start the scan
+		ClassGraph classGraph = new ClassGraph()
+									.enableAllInfo()             // Scan everything
+							         .whitelistPackages(packageScanMask);  // Scan packageScanMask subpackages (omit to scan all packages)
+		if (logErrorsToStdOut) {
+			classGraph = classGraph.verbose();
+		}
+		
+		try (ScanResult scanResult = classGraph.scan()) { // Start the scan
 			
 			//Building list of unique classes suitable for building entities
 			Map<String, ClassInfo> classInfoMap = new HashMap<String, ClassInfo>();

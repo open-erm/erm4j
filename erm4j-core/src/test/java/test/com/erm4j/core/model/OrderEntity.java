@@ -18,7 +18,42 @@ public class OrderEntity {
 	@ModelEntityAttribute(domainType = ModelDomainType.NAME)
 	private String name;
 
-	@ModelEntityAttribute(domainType = ModelDomainType.MONEY)
-	private BigDecimal totalAmount;
+	/***
+	 * Attribute that must not be included into entity model
+	 */
+	private BigDecimal calculatedTotalAmount;
 
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public String getGuid() {
+		return guid;
+	}
+
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public BigDecimal getCalculatedTotalAmount() {
+		return calculatedTotalAmount;
+	}
+
+	public void setCalculatedTotalAmount(BigDecimal calculatedTotalAmount) {
+		this.calculatedTotalAmount = calculatedTotalAmount;
+	}
+
+	
 }

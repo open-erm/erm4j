@@ -3,7 +3,7 @@
 <suite name="ERM Core Suite" parallel="false">
   <test name="TestCoreElements">
     <classes>
-      <!--  <class name="com.test.alatyr.framework.domain.core.AccessibleElementBasicTestCase"/>-->
+       <class name="test.com.erm4j.core.scanner.ERMScannerTest"/>
     </classes>
   </test> <!-- TestCoreElements -->
 </suite> 
