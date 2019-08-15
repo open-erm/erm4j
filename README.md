@@ -24,6 +24,7 @@ If you use any JPA implementations such as
 * Hibernate
 * EclipseLink
 * etc.
+
 and have your JPA - Entity code annotated with standard @Entity annotations than you are just 5 minutes away from getting your first version of model automatically.
 
 ## Quick start
