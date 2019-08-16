@@ -25,7 +25,7 @@ public class ERMScanner {
 
 	private boolean logErrorsToStdOut = false;
 	private String packageScanMask = "";
-	private List<ClassGraphEntityBuilder> builders = new ArrayList<>();
+	private List<ClassGraphEntityBuilder> entityBuilders = new ArrayList<>();
 	private DBTableNamingConventions tableNamingConventions = new DBTableNamingConventions();
 	
 	/***
@@ -58,7 +58,7 @@ public class ERMScanner {
 	 * @return
 	 */
 	public ERMScanner addEntityBuilder(ClassGraphEntityBuilder builder) {
-		this.builders.add(builder);
+		this.entityBuilders.add(builder);
 		return this;
 	}
 	/***
@@ -104,7 +104,7 @@ public class ERMScanner {
 			
 			//Building list of unique classes suitable for building entities
 			Map<String, ClassInfo> classInfoMap = new HashMap<String, ClassInfo>();
-			for (ClassGraphEntityBuilder entityBuilder : builders) {
+			for (ClassGraphEntityBuilder entityBuilder : entityBuilders) {
 				ClassInfoList applicableClassList = entityBuilder.getApplicableClassList(scanResult);
 				for (ClassInfo classInfo : applicableClassList) {
 					if (!classInfoMap.containsKey(classInfo.getName())) {
@@ -125,7 +125,7 @@ public class ERMScanner {
 				Entity entity = new Entity();
 				// We are sure that one of builders is applicable for building entity
 				// because earlier we preselected only applicable classes
-				for (ClassGraphEntityBuilder builder : builders) {
+				for (ClassGraphEntityBuilder builder : entityBuilders) {
 					if (builder.isApplicableFor(classInfo)) {
 						builder.fillEntityFields(entity, classInfo, tableNamingConventions);
 					}
@@ -133,7 +133,7 @@ public class ERMScanner {
 				// Filling basic attributes fields
 				for (FieldInfo fieldInfo : classInfo.getFieldInfo()) {
 					EntityAttribute entityAttribute = null;
-					for (ClassGraphEntityBuilder builder : builders) {
+					for (ClassGraphEntityBuilder builder : entityBuilders) {
 						if (builder.isApplicableFor(fieldInfo)) {
 							if (entityAttribute == null) {
 								if (builder.isReferenceAttribute(fieldInfo)) {
@@ -164,7 +164,7 @@ public class ERMScanner {
 						if (attr instanceof EntityReferenceAttribute) {
 							FieldInfo fieldInfo = refAttributesFieldInfo.get(attr.getUid());
 							if (fieldInfo != null) {
-								for (ClassGraphEntityBuilder builder : builders) {
+								for (ClassGraphEntityBuilder builder : entityBuilders) {
 									if (builder.isApplicableFor(fieldInfo)) {
 										builder.resolveReferenceAttribute(
 													(EntityReferenceAttribute) attr,
