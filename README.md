@@ -2,7 +2,7 @@
 
 ## Main goals
 
-EMR4J is an initiative that must help developers to instantly build multi-purpose entity relation (ER) models of their DB-aware applications.
+ERM4J is an initiative that must help developers to instantly build multi-purpose entity relation (ER) models of their DB-aware applications.
 
 Created models can be used for 
 * Documenting your project's data model, storing domain-oriented system and logical view of your data entities
