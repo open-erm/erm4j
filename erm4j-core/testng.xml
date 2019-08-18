@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="ERM Core Suite" parallel="false">
-  <test name="TestCoreElements">
+  <test name="TestModelStorage">
+    <classes>
+       <class name="test.com.erm4j.core.storage.ModelStorageTest"/>
+    </classes>
+  </test> <!-- TestCoreElements -->
+  <test name="TestScanner">
     <classes>
        <class name="test.com.erm4j.core.scanner.ERMScannerTest"/>
     </classes>

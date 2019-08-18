@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /***
@@ -13,6 +14,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  */
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+@JsonPropertyOrder({"uid", "system_name", "name","description", "attributes"})
 public class EnumerationItem extends AccessibleElement {
 
 	@JsonProperty("attributes")
@@ -56,6 +58,31 @@ public class EnumerationItem extends AccessibleElement {
 	@JsonProperty("attributes")
 	public void setAttributeValues(Map<String, Object> attributeValues) {
 		this.attributeValues = attributeValues;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((attributeValues == null) ? 0 : attributeValues.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EnumerationItem other = (EnumerationItem) obj;
+		if (attributeValues == null) {
+			if (other.attributeValues != null)
+				return false;
+		} else if (!attributeValues.equals(other.attributeValues))
+			return false;
+		return true;
 	}
 	
 }

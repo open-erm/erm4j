@@ -2,19 +2,19 @@ package com.erm4j.core.scanner;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.erm4j.core.bean.Entity;
+import com.erm4j.core.bean.ModelElement;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.FieldInfo;
 
 /***
- * Helper class for building {@link Entity} objects from {@link ClassGraph}
+ * Helper class for building {@link ModelElement} objects from {@link ClassGraph}
  * provided {@link ClassInfo} objects 
  * @author root
  *
  */
-public class EntityBuilderClassInfoHelper {
+public class ClassInfoHelper {
 	
 	private static final String ENTITY_POSTFIX = "entity";
 

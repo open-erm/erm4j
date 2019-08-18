@@ -11,6 +11,7 @@ import com.erm4j.core.bean.Entity;
 import com.erm4j.core.bean.EntityAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
 import com.erm4j.core.scanner.ERMScanner;
+import com.erm4j.core.scanner.ModelScanResult;
 import com.erm4j.core.scanner.impl.AnnotatedModelEntityBuilder;
 
 public class ERMScannerTest {
@@ -22,11 +23,13 @@ public class ERMScannerTest {
 
 	@Test
 	public void testScanModelAnnotatedEntitites() {
-		List<Entity> entities = new ERMScanner()
+		ModelScanResult scanResult = new ERMScanner()
 									.setPackageScanMask("test.com.erm4j.core")
 									.addEntityBuilder(new AnnotatedModelEntityBuilder())
 									.setTablePrefix(TABLE_PREFIX)
 									.scan();
+		 
+		List<Entity> entities = scanResult.getEntities(); 
 		assertTrue("Resolved 2 entities (from 3 classess in package)", entities.size() == 2);
 		
 		Entity orderEntity = entities.stream().filter(e -> e.getSystemName().equals(ORDER_ENTITY_SYSTEM_NAME))

@@ -87,12 +87,12 @@ public class ERMScanner {
 	}
 	
 	/***
-	 * Performs scanning of classes and returns list of {@link Entity} objects
-	 * that were found by {@link ClassGraphEntityBuilder} objects added 
-	 * to a list of entity builders 
+	 * Performs scanning of classes and returns {@link ModelScanResult} containing objects
+	 * that were found in packages defined by {@link ERMScanner#setPackageScanMask(String)} 
 	 * @return
 	 */
-	public List<Entity> scan() {
+	public ModelScanResult scan() {
+		ModelScanResult modelScanResult = new ModelScanResult();
 		ClassGraph classGraph = new ClassGraph()
 									.enableAllInfo()             // Scan everything
 							         .whitelistPackages(packageScanMask);  // Scan packageScanMask subpackages (omit to scan all packages)
@@ -116,7 +116,7 @@ public class ERMScanner {
 			// to correctly build references between entities, because
 			// during the first step we may not have correctly built referenced entities
 			// having correct uid's
-			List<Entity> entities = new ArrayList<>();
+			
 			// Map of attribute.uid - FieldInfo needed for entity references resolutions
 			Map<String, FieldInfo> refAttributesFieldInfo = new HashMap<>();
 			// First step - build entities with all attributes
@@ -155,11 +155,11 @@ public class ERMScanner {
 						}
 					}
 				}
-				entities.add(entity);
+				modelScanResult.getEntities().add(entity);
 			}
-			if (!entities.isEmpty()) {
+			if (!modelScanResult.getEntities().isEmpty()) {
 				// Second step - resolve references between entities
-				for (Entity entity : entities) {
+				for (Entity entity : modelScanResult.getEntities()) {
 					for (EntityAttribute attr : entity.getAttributes()) {
 						if (attr instanceof EntityReferenceAttribute) {
 							FieldInfo fieldInfo = refAttributesFieldInfo.get(attr.getUid());
@@ -169,7 +169,7 @@ public class ERMScanner {
 										builder.resolveReferenceAttribute(
 													(EntityReferenceAttribute) attr,
 													fieldInfo,
-													entities
+													modelScanResult.getEntities()
 												);
 									}
 								}
@@ -178,10 +178,8 @@ public class ERMScanner {
 					}
 				}
 			}
-			
-			return entities;
 		}
-
+		return modelScanResult;
 	}
 	
 }

@@ -1,6 +1,7 @@
 package com.erm4j.core.bean;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 import com.erm4j.core.constant.ModelDomainType;
 import com.erm4j.core.constant.Multiplicity;
@@ -11,10 +12,11 @@ import com.erm4j.core.constant.Multiplicity;
  * @author skadnikov
  *
  */
+@JsonPropertyOrder({"uid", "system_name", "name","description", "type", "pk", "unique","nullable","column", "target_entity_ref", "multiplicity", "fk"})
 public class EntityReferenceAttribute extends EntityAttribute {
 
 	@JsonProperty("target_entity_ref")
-	private AccessibleElementReference target = null;
+	private ModelElement target = null;
 	
 	@JsonProperty("multiplicity")
 	private Multiplicity multiplicity = Multiplicity.ONE_TO_ONE;
@@ -28,7 +30,7 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * @return
 	 */
 	@JsonProperty("target_entity_ref")
-	public AccessibleElementReference getTarget() {
+	public ModelElement getTarget() {
 		return target;
 	}
 	
@@ -37,8 +39,9 @@ public class EntityReferenceAttribute extends EntityAttribute {
 	 * @param target
 	 */
 	@JsonProperty("target_entity_ref")
-	public void setTarget(AccessibleElementReference target) {
-		this.target = target;
+	public void setTarget(ModelElement target) {
+		this.target = target.createReference();
+		
 	}
 
 	/***

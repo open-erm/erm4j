@@ -1,6 +1,10 @@
 package com.erm4j.core.bean;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
+import org.codehaus.jackson.annotate.JsonSubTypes;
+import org.codehaus.jackson.annotate.JsonSubTypes.Type;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 import com.erm4j.core.constant.ModelDomainType;
 
@@ -10,6 +14,16 @@ import com.erm4j.core.constant.ModelDomainType;
  * @author skadnikov
  *
  */
+@JsonPropertyOrder({"uid", "system_name", "name","description", "type", "pk", "unique","nullable","column"})
+@JsonTypeInfo(
+		  use = JsonTypeInfo.Id.NAME, 
+		  include = JsonTypeInfo.As.PROPERTY, 
+		  property = "class")
+		@JsonSubTypes({ 
+		  @Type(value = EntityAttribute.class, name = "primitive-attribute"), 
+		  @Type(value = EntityReferenceAttribute.class, name = "reference-attribute"), 
+		  @Type(value = EntityEnumAttribute.class, name = "enum-attribute") 
+		})
 public class EntityAttribute extends AccessibleElement {
 
 	@JsonProperty("type")
@@ -115,6 +129,43 @@ public class EntityAttribute extends AccessibleElement {
 	@JsonProperty("nullable")
 	public void setNullable(boolean nullable) {
 		this.nullable = nullable;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((column == null) ? 0 : column.hashCode());
+		result = prime * result + ((domainType == null) ? 0 : domainType.hashCode());
+		result = prime * result + (nullable ? 1231 : 1237);
+		result = prime * result + (primaryKey ? 1231 : 1237);
+		result = prime * result + (unique ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EntityAttribute other = (EntityAttribute) obj;
+		if (column == null) {
+			if (other.column != null)
+				return false;
+		} else if (!column.equals(other.column))
+			return false;
+		if (domainType != other.domainType)
+			return false;
+		if (nullable != other.nullable)
+			return false;
+		if (primaryKey != other.primaryKey)
+			return false;
+		if (unique != other.unique)
+			return false;
+		return true;
 	}
 
 }
