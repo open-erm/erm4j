@@ -13,11 +13,10 @@ Created models can be used for
 
 *   Help writing template code with such instruments as
 
-  *   DDL code generation
+    *  DDL code generation
   
-  *   Standard routine operations (check, find etc.) that work based on created metadata
+    *  Standard routine operations (check, find etc.) that work based on created metadata
   
-
 ## How to build a model
 Models can be created by one of the following ways 
 *   Describing everything in a JSON file
@@ -25,7 +24,6 @@ Models can be created by one of the following ways
 *   Creating model with a help of API
 
 *   **Straight from Java code marked with JPA or special ERM4J annotations**
-
 
 ## Who can use ERM4J
 Every project that uses Java-based ORM (Object-Relation-Mapping) technology can use ERM4J and quickly obtain all the great advantages of having "always-correct", "single-source-of-truth" data model in your project.
@@ -36,7 +34,6 @@ If you use any JPA implementations such as
 *   EclipseLink
 
 *   etc.
-
 
 and have your JPA - Entity code annotated with standard @Entity annotations than you are just 5 minutes away from getting your first version of model automatically.
 
