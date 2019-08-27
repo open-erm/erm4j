@@ -7,7 +7,10 @@ import java.util.Map;
 
 import com.erm4j.core.bean.Entity;
 import com.erm4j.core.bean.EntityAttribute;
+import com.erm4j.core.bean.EntityEnumAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
+import com.erm4j.core.bean.Enumeration;
+import com.erm4j.core.bean.EnumerationItem;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -24,9 +27,12 @@ import io.github.classgraph.ScanResult;
 public class ERMScanner {
 
 	private boolean logErrorsToStdOut = false;
-	private String packageScanMask = "";
+	private String entityPackageScanMask = "";
+	private String enumPackageScanMask = "";
 	private List<ClassGraphEntityBuilder> entityBuilders = new ArrayList<>();
+	private List<ClassGraphEnumBuilder> enumBuilders = new ArrayList<>();
 	private DBTableNamingConventions tableNamingConventions = new DBTableNamingConventions();
+	private ModelScanResult modelScanResult;
 	
 	/***
 	 * Sets if class scanning will be logged to stdout.
@@ -40,14 +46,26 @@ public class ERMScanner {
 	}
 
 	/***
-	 * Sets package mask for classes which would be scanned.
+	 * Sets package mask for classes which would be scanned for building enumerations.
 	 * Therefore if mask would 'com.abc.core' than only classes that
 	 * are included into 'com.abc.core.*' would be scanned
-	 * @param packageScanMask
+	 * @param enumPackageScanMask
 	 * @return
 	 */
-	public ERMScanner setPackageScanMask(String packageScanMask) {
-		this.packageScanMask = packageScanMask;
+	public ERMScanner setEnumPackageScanMask(String enumPackageScanMask) {
+		this.enumPackageScanMask = enumPackageScanMask;
+		return this;
+	}
+
+	/***
+	 * Sets package mask for classes which would be scanned for building entities.
+	 * Therefore if mask would 'com.abc.core' than only classes that
+	 * are included into 'com.abc.core.*' would be scanned
+	 * @param entityPackageScanMask
+	 * @return
+	 */
+	public ERMScanner setEntityPackageScanMask(String entityPackageScanMask) {
+		this.entityPackageScanMask = entityPackageScanMask;
 		return this;
 	}
 	
@@ -61,6 +79,18 @@ public class ERMScanner {
 		this.entityBuilders.add(builder);
 		return this;
 	}
+
+	/***
+	 * Adds {@link ClassGraphEnumBuilder} which will process
+	 * class metadata and extract {@link Entity} objects
+	 * @param builder
+	 * @return
+	 */
+	public ERMScanner addEnumerationBuilder(ClassGraphEnumBuilder builder) {
+		this.enumBuilders.add(builder);
+		return this;
+	}
+	
 	/***
 	 * Sets prefix that would prepend generated table name
 	 * i.e. if prefix is 'SBT_' and generated table name is 'order'
@@ -87,15 +117,70 @@ public class ERMScanner {
 	}
 	
 	/***
-	 * Performs scanning of classes and returns {@link ModelScanResult} containing objects
-	 * that were found in packages defined by {@link ERMScanner#setPackageScanMask(String)} 
+	 * Performs scanning of classes and returns {@link ModelScanResult} containing entities
+	 * that were found in packages defined by {@link ERMScanner#setEntityPackageScanMask(String)} 
 	 * @return
 	 */
 	public ModelScanResult scan() {
-		ModelScanResult modelScanResult = new ModelScanResult();
+		modelScanResult = new ModelScanResult();
+		scanEnumerations();
+		scanEntities();
+		return modelScanResult;
+	}
+
+	private void scanEnumerations() {
 		ClassGraph classGraph = new ClassGraph()
 									.enableAllInfo()             // Scan everything
-							         .whitelistPackages(packageScanMask);  // Scan packageScanMask subpackages (omit to scan all packages)
+							         .whitelistPackages(enumPackageScanMask);  // Scan packageScanMask subpackages (omit to scan all packages)
+		if (logErrorsToStdOut) {
+			classGraph = classGraph.verbose();
+		}
+
+		try (ScanResult scanResult = classGraph.scan()) { // Start the scan
+			//Building list of unique classes suitable for building enumerations
+			Map<String, ClassInfo> classInfoMap = new HashMap<String, ClassInfo>();
+			for (ClassGraphEnumBuilder enumBuilder : enumBuilders) {
+				ClassInfoList applicableClassList = enumBuilder.getApplicableClassList(scanResult);
+				for (ClassInfo classInfo : applicableClassList) {
+					if (classInfo.isEnum() && !classInfoMap.containsKey(classInfo.getName())) {
+						classInfoMap.put(classInfo.getName(), classInfo);
+					}
+				}
+			}
+			
+			for (ClassInfo classInfo : classInfoMap.values()) {
+				Enumeration enumeration = new Enumeration();
+				// We are sure that one of builders is applicable for building enumeration
+				// because earlier we preselected only applicable classes
+				for (ClassGraphEnumBuilder builder : enumBuilders) {
+					if (builder.isApplicableFor(classInfo)) {
+						builder.fillEnumerationFields(enumeration, classInfo);
+					}
+				}
+				
+				for (FieldInfo fieldInfo : classInfo.getFieldInfo()) {
+					EnumerationItem item = new EnumerationItem();
+					boolean itemFilled = false;
+					for (ClassGraphEnumBuilder builder : enumBuilders) {
+						if (builder.isApplicableFor(fieldInfo)) {
+							builder.fillEnumerationItemFields(item,fieldInfo);
+							itemFilled = true;
+						}
+					}
+					if (itemFilled) {
+						enumeration.getItems().add(item);
+					}
+				}
+				modelScanResult.getEnumerations().add(enumeration);
+			}
+		}
+
+	}
+
+	private void scanEntities() {
+		ClassGraph classGraph = new ClassGraph()
+									.enableAllInfo()             // Scan everything
+							         .whitelistPackages(entityPackageScanMask);  // Scan packageScanMask subpackages (omit to scan all packages)
 		if (logErrorsToStdOut) {
 			classGraph = classGraph.verbose();
 		}
@@ -139,6 +224,14 @@ public class ERMScanner {
 								if (builder.isReferenceAttribute(fieldInfo)) {
 									entityAttribute = new EntityReferenceAttribute();
 								}
+								else if (builder.isEnumAttribute(fieldInfo)) {
+									entityAttribute = new EntityEnumAttribute();
+									builder.fillEnumAttributeTarget(
+													(EntityEnumAttribute) entityAttribute,
+													fieldInfo,
+													modelScanResult.getEnumerations()
+											);
+								}
 								else {
 									entityAttribute = new EntityAttribute();
 								}
@@ -179,7 +272,6 @@ public class ERMScanner {
 				}
 			}
 		}
-		return modelScanResult;
 	}
 	
 }

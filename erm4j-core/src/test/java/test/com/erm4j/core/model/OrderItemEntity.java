@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.erm4j.core.annotations.ModelEntity;
 import com.erm4j.core.annotations.ModelEntityAttribute;
 import com.erm4j.core.annotations.ModelEntityReference;
+import com.erm4j.core.annotations.ModelEnumerationReference;
 import com.erm4j.core.constant.ModelDomainType;
 
 @ModelEntity(systemName = "OrderItem", name = "Order item", uid = "order-item-entity-uid")
@@ -25,5 +26,9 @@ public class OrderItemEntity {
 	@ModelEntityAttribute(domainType = ModelDomainType.ENTITY, systemName = "Order", name = "Order")
 	@ModelEntityReference(target = OrderEntity.class)
 	private long orderId;
-	
+
+	@ModelEntityAttribute(domainType = ModelDomainType.ENUM, systemName = "VatCalcType", name = "VAT calculation type")
+	@ModelEnumerationReference(target = VatCalculationType.class)
+	private String vatCalcType;
+
 }

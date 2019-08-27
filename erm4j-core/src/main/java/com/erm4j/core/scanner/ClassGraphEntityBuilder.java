@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.erm4j.core.bean.Entity;
 import com.erm4j.core.bean.EntityAttribute;
+import com.erm4j.core.bean.EntityEnumAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
+import com.erm4j.core.bean.Enumeration;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -68,7 +70,14 @@ public interface ClassGraphEntityBuilder {
 	 * @return
 	 */
 	public boolean isReferenceAttribute(FieldInfo fieldInfo);
-	
+
+	/***
+	 * Checks if given {@link FieldInfo} represents {@link EntityEnumAttribute}
+	 * @param fieldInfo
+	 * @return
+	 */
+	public boolean isEnumAttribute(FieldInfo fieldInfo);
+
 	/***
 	 * Resolves {@link EntityReferenceAttribute} fields on the basis
 	 * of metadata in {@link FieldInfo} and full collection of {@link Entity}
@@ -78,4 +87,14 @@ public interface ClassGraphEntityBuilder {
 	 * @param entities
 	 */
 	public void resolveReferenceAttribute(EntityReferenceAttribute attr, FieldInfo fieldInfo, List<Entity> entities);
+	
+	/***
+	 * Fills {@link EntityEnumAttribute} target {@link Enumeration} on the basis
+	 * of metadata in {@link FieldInfo}
+	 * 
+	 * @param entityAttribute
+	 * @param fieldInfo
+	 * @param enumList
+	 */
+	public void fillEnumAttributeTarget(EntityEnumAttribute entityAttribute, FieldInfo fieldInfo, List<Enumeration> enumList);
 }

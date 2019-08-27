@@ -5,14 +5,18 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
 
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.erm4j.core.bean.Entity;
 import com.erm4j.core.bean.EntityAttribute;
+import com.erm4j.core.bean.EntityEnumAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
+import com.erm4j.core.bean.Enumeration;
 import com.erm4j.core.scanner.ERMScanner;
 import com.erm4j.core.scanner.ModelScanResult;
 import com.erm4j.core.scanner.impl.AnnotatedModelEntityBuilder;
+import com.erm4j.core.scanner.impl.AnnotatedModelEnumerationBuilder;
 
 public class ERMScannerTest {
 
@@ -20,15 +24,32 @@ public class ERMScannerTest {
 	private static final String ORDER_ITEM_TABLE_NAME = "TBL_ORDER_ITEM";
 	private static final String ORDER_ENTITY_SYSTEM_NAME = "Order";
 	private static final String TABLE_PREFIX = "TBL_";
-
+	private ModelScanResult scanResult;
+	private Enumeration vatCalcTypeEnum;
+	
+	@BeforeClass
+	public void setUp() {
+		scanResult = new ERMScanner()
+				.setEntityPackageScanMask("test.com.erm4j.core")
+				.setEnumPackageScanMask("test.com.erm4j.core")
+				.addEnumerationBuilder(new AnnotatedModelEnumerationBuilder())
+				.addEntityBuilder(new AnnotatedModelEntityBuilder())
+				.setTablePrefix(TABLE_PREFIX)
+				.scan();
+	}
+	
 	@Test
+	public void testScanModelAnnotatedEnumerations() {
+		List<Enumeration> enumerations = scanResult.getEnumerations();
+		assertTrue("Found one model enumeration", enumerations.size() == 1);
+		
+		vatCalcTypeEnum = enumerations.get(0);
+		
+		assertTrue("VAT Calculation type enum has 2 items", vatCalcTypeEnum.getItems().size() == 2);
+	}
+
+	@Test(dependsOnMethods = "testScanModelAnnotatedEnumerations")
 	public void testScanModelAnnotatedEntitites() {
-		ModelScanResult scanResult = new ERMScanner()
-									.setPackageScanMask("test.com.erm4j.core")
-									.addEntityBuilder(new AnnotatedModelEntityBuilder())
-									.setTablePrefix(TABLE_PREFIX)
-									.scan();
-		 
 		List<Entity> entities = scanResult.getEntities(); 
 		assertTrue("Resolved 2 entities (from 3 classess in package)", entities.size() == 2);
 		
@@ -54,7 +75,7 @@ public class ERMScannerTest {
 		assertTrue("Order entity has correct table name", 
 				orderItemEntity.getTable().equals(ORDER_ITEM_TABLE_NAME));
 		
-		assertTrue("Order entity has 5 attributes", orderItemEntity.getAttributes().size() == 5);
+		assertTrue("Order entity has 6 attributes", orderItemEntity.getAttributes().size() == 6);
 		
 		EntityAttribute orderAttribute = orderItemEntity.getAttributes().stream().filter(a -> a.getSystemName().equalsIgnoreCase("Order"))
 												.findFirst()
@@ -63,6 +84,15 @@ public class ERMScannerTest {
 
 		assertTrue("Order reference attribute has target entity Order uid",
 					((EntityReferenceAttribute) orderAttribute).getTarget().getUid().equals(orderEntity.getUid()));
+
+		
+		EntityAttribute vatCalcTypeAttribute = orderItemEntity.getAttributes().stream().filter(a -> a.getSystemName().equalsIgnoreCase("VATCalcType"))
+												.findFirst()
+												.orElse(null);
+		assertTrue("Found VATCalculationType enum attribute in OrderItem entity", vatCalcTypeAttribute instanceof EntityEnumAttribute);
+
+		assertTrue("VATCalculationType enum attribute has target enum uid",
+						((EntityEnumAttribute) vatCalcTypeAttribute).getTarget().getUid().equals(vatCalcTypeEnum.getUid()));
 
 	}
 	

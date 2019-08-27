@@ -18,11 +18,11 @@ public class ClassInfoHelper {
 	
 	private static final String ENTITY_POSTFIX = "entity";
 
-	public static String generateEntityUID(ClassInfo classInfo) {
+	public static String generateClassUID(ClassInfo classInfo) {
 		return classInfo.getName();
 	}
 
-	public static String generateEntityAttributeUID(ClassInfo classInfo, FieldInfo fieldInfo) {
+	public static String generateClassFieldUID(ClassInfo classInfo, FieldInfo fieldInfo) {
 		return classInfo.getName() + "_" + fieldInfo.getName();
 	}
 
@@ -34,8 +34,12 @@ public class ClassInfoHelper {
 		}
 		return shortClassName;
 	}
-	
-	public static String generateEntityAttributeSystemName(FieldInfo fieldInfo) {
+
+	public static String generateClassSystemName(ClassInfo classInfo) {
+		return classInfo.getSimpleName();
+	}
+
+	public static String generateClassFieldSystemName(FieldInfo fieldInfo) {
 		return uppercaseFirstLetter(fieldInfo.getName());
 	}
 
@@ -43,9 +47,14 @@ public class ClassInfoHelper {
 		String entitySystemName = generateEntitySystemName(classInfo);
 		return splitCamelCase(entitySystemName);
 	}
-	
-	public static String generateEntityAttributeName(FieldInfo fieldInfo) {
-		String attrSystemName = generateEntityAttributeSystemName(fieldInfo);
+
+	public static String generateClassName(ClassInfo classInfo) {
+		String classSystemName = generateClassSystemName(classInfo);
+		return splitCamelCase(classSystemName);
+	}
+
+	public static String generateClassFieldName(FieldInfo fieldInfo) {
+		String attrSystemName = generateClassFieldSystemName(fieldInfo);
 		return splitCamelCase(attrSystemName);
 	}
 
@@ -61,7 +70,7 @@ public class ClassInfoHelper {
 	}
 	
 	public static String generateTableColumnName(FieldInfo fieldInfo, DBTableNamingConventions tableNaming) {
-		String attrSystemName = generateEntityAttributeSystemName(fieldInfo);
+		String attrSystemName = generateClassFieldSystemName(fieldInfo);
 		if (tableNaming.isUseSnakeCaseNaming()) {
 			return camelCaseToSnakeCase(attrSystemName).toUpperCase();
 		}

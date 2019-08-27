@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.erm4j.core.annotations.ModelEntity;
 import com.erm4j.core.bean.Entity;
 import com.erm4j.core.bean.EntityAttribute;
+import com.erm4j.core.bean.EntityEnumAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
+import com.erm4j.core.bean.Enumeration;
 import com.erm4j.core.constant.ModelDomainType;
 import com.erm4j.core.constant.Multiplicity;
 import com.erm4j.core.scanner.ClassGraphEntityBuilder;
@@ -32,8 +34,10 @@ import io.github.classgraph.ScanResult;
 public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 	
 	private final static String ENTITY_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEntity";
+	private final static String ENUMERATION_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEnumeration";
 	private static final String ATTRIBUTE_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEntityAttribute";
-	private static final String REFERENCE_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEntityReference";
+	private static final String ENTITY_REFERENCE_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEntityReference";
+	private static final String ENUM_REFERENCE_ANNOTATION_NAME = "com.erm4j.core.annotations.ModelEnumerationReference";
 
 	private final static String UID_PARAM_NAME = "uid";
 	private final static String SYSTEM_NAME_PARAM_NAME = "systemName";
@@ -96,12 +100,17 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 
 	@Override
 	public boolean isReferenceAttribute(FieldInfo fieldInfo) {
-		return fieldInfo.hasAnnotation(REFERENCE_ANNOTATION_NAME);
+		return fieldInfo.hasAnnotation(ENTITY_REFERENCE_ANNOTATION_NAME);
+	}
+
+	@Override
+	public boolean isEnumAttribute(FieldInfo fieldInfo) {
+		return fieldInfo.hasAnnotation(ENUM_REFERENCE_ANNOTATION_NAME);
 	}
 	
 	@Override
 	public void resolveReferenceAttribute(EntityReferenceAttribute attr, FieldInfo fieldInfo, List<Entity> entities) {
-		AnnotationInfo annotationInfo = fieldInfo.getAnnotationInfo(REFERENCE_ANNOTATION_NAME);
+		AnnotationInfo annotationInfo = fieldInfo.getAnnotationInfo(ENTITY_REFERENCE_ANNOTATION_NAME);
 		if (annotationInfo != null) {
 			for (AnnotationParameterValue param : annotationInfo.getParameterValues()) {
 				Object value = param.getValue();
@@ -140,6 +149,38 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 		}
 	}
 
+	@Override
+	public void fillEnumAttributeTarget(EntityEnumAttribute attr, FieldInfo fieldInfo,  List<Enumeration> enumList) {
+		AnnotationInfo annotationInfo = fieldInfo.getAnnotationInfo(ENUM_REFERENCE_ANNOTATION_NAME);
+		if (annotationInfo != null) {
+			
+			for (AnnotationParameterValue param : annotationInfo.getParameterValues()) {
+				Object value = param.getValue();
+				if (param.getName().equalsIgnoreCase(TARGET_PARAM_NAME)) {
+					if (value instanceof AnnotationClassRef) {
+						AnnotationClassRef classRef = (AnnotationClassRef) value;
+						// We need to extract enum UID from class that 
+						// is referenced in annotation
+						ClassInfo targetClassInfo = classRef.getClassInfo();
+						String targetEnumUID = lookupTargetEnumUID(targetClassInfo);
+						if (StringUtils.isNotBlank(targetEnumUID)) {
+							// Looking for enum with found uid in global context
+							Enumeration targetEnum = enumList.stream()
+													.filter(e -> e.getUid().equalsIgnoreCase(targetEnumUID))
+													.findFirst()
+													.orElse(null);
+							if (attr.getTarget() == null) {
+								attr.setTarget(targetEnum);
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+
 	private String lookupTargetEntityUID(ClassInfo targetClassInfo) {
 		String targetEntityUID = null;
 		if (targetClassInfo.hasAnnotation(ENTITY_ANNOTATION_NAME)) {
@@ -152,14 +193,38 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 					if (StringUtils.isNotBlank(annotatedUid)) {
 						targetEntityUID = annotatedUid;
 					}
+					break;
 				}
 			}
 			if (StringUtils.isBlank(targetEntityUID)) {
 				targetEntityUID = ClassInfoHelper
-									.generateEntityUID(targetClassInfo);
+									.generateClassUID(targetClassInfo);
 			}
 		}
 		return targetEntityUID;
+	}
+
+	private String lookupTargetEnumUID(ClassInfo targetClassInfo) {
+		String targetEnumUID = null;
+		if (targetClassInfo.hasAnnotation(ENUMERATION_ANNOTATION_NAME)) {
+			AnnotationInfo enumAnnottion = targetClassInfo.getAnnotationInfo(ENUMERATION_ANNOTATION_NAME);
+			// Looking for uid parameter in referenced class annotation
+			for (AnnotationParameterValue refParam : enumAnnottion.getParameterValues()) {
+				// If it is present and not empty - we take it as a enumeration uid
+				if (refParam.getName().equalsIgnoreCase(UID_PARAM_NAME)) {
+					String annotatedUid = refParam.getValue().toString();
+					if (StringUtils.isNotBlank(annotatedUid)) {
+						targetEnumUID = annotatedUid;
+					}
+					break;
+				}
+			}
+			if (StringUtils.isBlank(targetEnumUID)) {
+				targetEnumUID = ClassInfoHelper
+									.generateClassUID(targetClassInfo);
+			}
+		}
+		return targetEnumUID;
 	}
 
 
@@ -167,20 +232,20 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 			FieldInfo fieldInfo, DBTableNamingConventions tableNaming) {
 		if (StringUtils.isBlank(attribute.getUid())) {
 			attribute.setUid(ClassInfoHelper
-								.generateEntityAttributeUID(classInfo, fieldInfo));
+								.generateClassFieldUID(classInfo, fieldInfo));
 		}
 		
 		if (StringUtils.isBlank(attribute.getSystemName())) {
 			attribute.setSystemName(
 						ClassInfoHelper
-							.generateEntityAttributeSystemName(fieldInfo)
+							.generateClassFieldSystemName(fieldInfo)
 					);
 		}
 
 		if (StringUtils.isBlank(attribute.getName())) {
 			attribute.setName(
 					ClassInfoHelper
-						.generateEntityAttributeName(fieldInfo)
+						.generateClassFieldName(fieldInfo)
 				);
 		}
 		
@@ -294,7 +359,7 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 	private void fillEntityFieldsWithAutogeneratedValues(Entity entity, ClassInfo classInfo,
 			DBTableNamingConventions tableNaming) {
 		if (StringUtils.isBlank(entity.getUid())) {
-			entity.setUid(ClassInfoHelper.generateEntityUID(classInfo));
+			entity.setUid(ClassInfoHelper.generateClassUID(classInfo));
 		}
 		
 		if (StringUtils.isBlank(entity.getSystemName())) {
@@ -316,8 +381,5 @@ public class AnnotatedModelEntityBuilder implements ClassGraphEntityBuilder {
 					);
 		}
 	}
-
-
-	
 
 }
