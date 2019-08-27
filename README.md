@@ -1,6 +1,4 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8bccad2f360b4cc99b9c33f67a5c2726)](https://www.codacy.com/app/open-erm/erm4j?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=open-erm/erm4j&amp;utm_campaign=Badge_Grade)
-
-# erm4j
+# erm4j [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8bccad2f360b4cc99b9c33f67a5c2726)](https://www.codacy.com/app/open-erm/erm4j?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=open-erm/erm4j&amp;utm_campaign=Badge_Grade)
 
 ## Main goals
 
