@@ -14,8 +14,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  */
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
-@JsonPropertyOrder({"uid", "system_name", "name","description", "attributes", "table"})
-public class Entity extends AccessibleElement{
+@JsonPropertyOrder({"container_module", "uid", "system_name", "name","description", "attributes", "table"})
+public class Entity extends ModuleLevelElement{
 
 	@JsonProperty("table")
 	private String table = null;

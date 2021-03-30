@@ -18,7 +18,7 @@ import com.erm4j.core.scanner.ModelScanResult;
 import com.erm4j.core.scanner.impl.AnnotatedModelEntityBuilder;
 import com.erm4j.core.scanner.impl.AnnotatedModelEnumerationBuilder;
 
-public class ERMScannerTest {
+public class ERMScannerSimpleTest {
 
 	private static final String ORDER_ITEM_ENTITY_SYSTEM_NAME = "OrderItem";
 	private static final String ORDER_ITEM_TABLE_NAME = "TBL_ORDER_ITEM";

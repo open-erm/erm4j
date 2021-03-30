@@ -16,8 +16,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  */
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
-@JsonPropertyOrder({"uid", "system_name", "name","description", "attributes", "items"})
-public class Enumeration extends AccessibleElement {
+@JsonPropertyOrder({"container_module", "uid", "system_name", "name","description", "attributes", "items"})
+public class Enumeration extends ModuleLevelElement {
 	
 	@JsonProperty("attributes")
 	private List<EnumerationItemAttribute> attributes = new ArrayList<>(); 

@@ -18,20 +18,27 @@ import com.erm4j.core.bean.EntityEnumAttribute;
 import com.erm4j.core.bean.EntityReferenceAttribute;
 import com.erm4j.core.bean.Enumeration;
 import com.erm4j.core.bean.EnumerationItem;
+import com.erm4j.core.bean.Module;
 import com.erm4j.core.constant.ModelDomainType;
 
 public class ModelStorageTest {
 	
 	private ObjectMapper jsonMapper;
+	private Module module;
 
 	@BeforeClass
 	public void setUp() {
+		module = new Module();
+		module.setUid("som-module-1");
+		module.setSystemName("Module1");
+		module.setName("Module 1");
 		jsonMapper = new ObjectMapper();
 	}
 	
 	@Test
 	public void testEnumStorage() throws JsonGenerationException, JsonMappingException, IOException {
 		Enumeration taxTypeEnum = createEnumType();
+		module.addEnumeration(taxTypeEnum);
 		
 		String taxTypeEnumJSON = jsonMapper.writeValueAsString(taxTypeEnum);
 		assertTrue("Tax type enumeration serialized correctly", StringUtils.isNotBlank(taxTypeEnumJSON));
@@ -44,6 +51,8 @@ public class ModelStorageTest {
 	public void testEntityStorage() throws JsonGenerationException, JsonMappingException, IOException {
 		
 		Entity orderEntity = createEntity("uid-order","Order","Order","TBL_ORDER");
+		module.addEntity(orderEntity);
+
 		EntityAttribute orderID = createEntityAttribute(
 									"uid-order-1","ID","ID","ID", ModelDomainType.ID);
 		orderID.setPrimaryKey(true);
@@ -59,6 +68,8 @@ public class ModelStorageTest {
 
 		
 		Entity orderItemEntity = createEntity("uid-orderItem","OrderItem","Order item","TBL_ORDER_ITEM");
+		module.addEntity(orderItemEntity);
+
 		EntityAttribute orderItemID = createEntityAttribute(
 				"uid-order-item-1","ID","ID","ID", ModelDomainType.ID);
 		orderItemID.setPrimaryKey(true);
@@ -91,7 +102,15 @@ public class ModelStorageTest {
 
 		Entity restoredOrderItemEntity = jsonMapper.readValue(orderItemEntityJSON, Entity.class);
 		assertTrue("Order item entity deserialized correctly", orderItemEntity.equals(restoredOrderItemEntity));
+	}
+	
+	@Test(dependsOnMethods = {"testEntityStorage","testEnumStorage"})
+	public void testModuleSerialization() throws JsonGenerationException, JsonMappingException, IOException {
+		String moduleJSON = jsonMapper.writeValueAsString(module);
+		assertTrue("Order entity serialized correctly", StringUtils.isNotBlank(moduleJSON));
 
+		Module restoredModule = jsonMapper.readValue(moduleJSON, Module.class);
+		assertTrue("Module deserialized correctly", module.equals(restoredModule));
 
 	}
 

@@ -188,15 +188,8 @@ public class ERMScanner {
 		try (ScanResult scanResult = classGraph.scan()) { // Start the scan
 			
 			//Building list of unique classes suitable for building entities
-			Map<String, ClassInfo> classInfoMap = new HashMap<String, ClassInfo>();
-			for (ClassGraphEntityBuilder entityBuilder : entityBuilders) {
-				ClassInfoList applicableClassList = entityBuilder.getApplicableClassList(scanResult);
-				for (ClassInfo classInfo : applicableClassList) {
-					if (!classInfoMap.containsKey(classInfo.getName())) {
-						classInfoMap.put(classInfo.getName(), classInfo);
-					}
-				}
-			}
+			Map<String, ClassInfo> classInfoMap = buildUniqueEntityClassInfoMap(scanResult);
+			
 			// We need to perform double step transformation in order
 			// to correctly build references between entities, because
 			// during the first step we may not have correctly built referenced entities
@@ -217,30 +210,7 @@ public class ERMScanner {
 				}
 				// Filling basic attributes fields
 				for (FieldInfo fieldInfo : classInfo.getFieldInfo()) {
-					EntityAttribute entityAttribute = null;
-					for (ClassGraphEntityBuilder builder : entityBuilders) {
-						if (builder.isApplicableFor(fieldInfo)) {
-							if (entityAttribute == null) {
-								if (builder.isReferenceAttribute(fieldInfo)) {
-									entityAttribute = new EntityReferenceAttribute();
-								}
-								else if (builder.isEnumAttribute(fieldInfo)) {
-									entityAttribute = new EntityEnumAttribute();
-									builder.fillEnumAttributeTarget(
-													(EntityEnumAttribute) entityAttribute,
-													fieldInfo,
-													modelScanResult.getEnumerations()
-											);
-								}
-								else {
-									entityAttribute = new EntityAttribute();
-								}
-							}
-							// This call fills common attributes and doesn't not touch
-							// entity reference attributes
-							builder.fillEntityAttributeFields(entityAttribute, fieldInfo, tableNamingConventions);
-						}
-					}
+					EntityAttribute entityAttribute = createEntityAttribute(fieldInfo);
 					if (entityAttribute != null) {
 						entity.getAttributes().add(entityAttribute);
 						if (entityAttribute instanceof EntityReferenceAttribute) {
@@ -250,21 +220,19 @@ public class ERMScanner {
 				}
 				modelScanResult.getEntities().add(entity);
 			}
-			if (!modelScanResult.getEntities().isEmpty()) {
-				// Second step - resolve references between entities
-				for (Entity entity : modelScanResult.getEntities()) {
-					for (EntityAttribute attr : entity.getAttributes()) {
-						if (attr instanceof EntityReferenceAttribute) {
-							FieldInfo fieldInfo = refAttributesFieldInfo.get(attr.getUid());
-							if (fieldInfo != null) {
-								for (ClassGraphEntityBuilder builder : entityBuilders) {
-									if (builder.isApplicableFor(fieldInfo)) {
-										builder.resolveReferenceAttribute(
-													(EntityReferenceAttribute) attr,
-													fieldInfo,
-													modelScanResult.getEntities()
-												);
-									}
+			
+			for (Entity entity : modelScanResult.getEntities()) {
+				for (EntityAttribute attr : entity.getAttributes()) {
+					if (attr instanceof EntityReferenceAttribute) {
+						FieldInfo fieldInfo = refAttributesFieldInfo.get(attr.getUid());
+						if (fieldInfo != null) {
+							for (ClassGraphEntityBuilder builder : entityBuilders) {
+								if (builder.isApplicableFor(fieldInfo)) {
+									builder.resolveReferenceAttribute(
+											(EntityReferenceAttribute) attr,
+											fieldInfo,
+											modelScanResult.getEntities()
+											);
 								}
 							}
 						}
@@ -272,6 +240,47 @@ public class ERMScanner {
 				}
 			}
 		}
+	}
+
+	private Map<String, ClassInfo> buildUniqueEntityClassInfoMap(ScanResult scanResult) {
+		Map<String, ClassInfo> classInfoMap = new HashMap<String, ClassInfo>();
+		for (ClassGraphEntityBuilder entityBuilder : entityBuilders) {
+			ClassInfoList applicableClassList = entityBuilder.getApplicableClassList(scanResult);
+			for (ClassInfo classInfo : applicableClassList) {
+				if (!classInfoMap.containsKey(classInfo.getName())) {
+					classInfoMap.put(classInfo.getName(), classInfo);
+				}
+			}
+		}
+		return classInfoMap;
+	}
+
+	private EntityAttribute createEntityAttribute(FieldInfo fieldInfo) {
+		EntityAttribute entityAttribute = null;
+		for (ClassGraphEntityBuilder builder : entityBuilders) {
+			if (builder.isApplicableFor(fieldInfo)) {
+				if (entityAttribute == null) {
+					if (builder.isReferenceAttribute(fieldInfo)) {
+						entityAttribute = new EntityReferenceAttribute();
+					}
+					else if (builder.isEnumAttribute(fieldInfo)) {
+						entityAttribute = new EntityEnumAttribute();
+						builder.fillEnumAttributeTarget(
+										(EntityEnumAttribute) entityAttribute,
+										fieldInfo,
+										modelScanResult.getEnumerations()
+								);
+					}
+					else {
+						entityAttribute = new EntityAttribute();
+					}
+				}
+				// This call fills common attributes and doesn't not touch
+				// entity reference attributes
+				builder.fillEntityAttributeFields(entityAttribute, fieldInfo, tableNamingConventions);
+			}
+		}
+		return entityAttribute;
 	}
 	
 }
